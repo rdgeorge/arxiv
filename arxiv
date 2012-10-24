@@ -55,10 +55,11 @@ def main():
                 'millimet': 8,
                 'herschel': 6,
                 r'\b' 'merg': 6,
+                'ulirg' : 6,
                 r'\b' 'agn' r'\b': 4,
                 'cii': 4,
                 r'\b' 'dust': 4,
-                'emission': 4,
+                r'\b' 'emi': 4,
                 r'\b' 'form': 4,
                 'j=': 4,
                 r'\b' 'lens': 4,
@@ -73,6 +74,7 @@ def main():
                 'starburst': 4,
                 'sub': 4,
                 'active': 2,
+                'distant': 2,
                 'distribution': 2,
                 'energy': 2,
                 r'\b' 'gala': 2,
@@ -88,12 +90,16 @@ def main():
                 'minor': 2,
                 'number': 2,
                 'observ': 2,
+                'probe': 2,
                 'propert': 2,
                 'redshift': 2,
                 'relation': 2,
                 'simulation': 2,
+                r'\b' 'sne' r'\b': 2,
                 'source': 2,
                 'star': 2,
+                'supernov': 2,
+                'ultra': 2,
                }
     # Query arxiv
     cat='astro-ph.CO'
@@ -108,7 +114,7 @@ def main():
            '&sortOrder=descending')
     data = req.urlopen(url).read()
     page = feedparser.parse(data)
-    
+
     # Sort titles by relevance
     articles = [[-1, entry['id'][21:], entry['title'], []]
                 for entry in page['entries']              ]
