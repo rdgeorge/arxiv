@@ -36,10 +36,23 @@ def title_relevance(title, keywords):
         The sum of the weights of all keywords in the string, and the keywords
         found.
     """
+    filler_words = ('a', 'an', 'and', 'are', 'as', 'at', 'by',
+                    'can', "can't", 'cannot', 'did', 'do', "don't",
+                    'for', 'from', 'how', 'in', 'is', 'not', 'of',
+                    'the', 'they', 'their', 'to',
+                    'when', 'which', 'why', 'with')
     relevance = 0
+
+    # Remove filler words from title
     relevant_keywords = []
+    title = title.lower().split()
+    for word in filler_words:
+        while word in title:
+            del(title[title.index(word)])
+    title = ' '.join(title)
+
     for keyword in keywords:
-        if re.search(keyword.lower(), title.lower()) is not None:
+        if re.search(keyword, title) is not None:
             relevance += keywords[keyword]
             relevant_keywords.append(keyword)
     return float(relevance) / len(title.split()), relevant_keywords
@@ -65,6 +78,7 @@ def main():
     keywords = {r'\b' 'smg' r'\b': 10,
                 r'\b' 'ism' r'\b': 8,
                 'millimet': 8,
+                'alma': 6,
                 'herschel': 6,
                 r'\b' 'merg': 6,
                 'ulirg': 6,
@@ -72,6 +86,7 @@ def main():
                 'cii': 4,
                 r'\b' 'dust': 4,
                 r'\b' 'emi': 4,
+                r'\b' 'evol': 4,
                 r'\b' 'form': 4,
                 'j=': 4,
                 r'\b' 'lens': 4,
@@ -85,10 +100,12 @@ def main():
                 'spectra': 4,
                 'starburst': 4,
                 'sub': 4,
+                'turbulent': 4,
                 'active': 2,
                 'distant': 2,
                 'distribution': 2,
                 'energy': 2,
+                'fragment': 2,
                 r'\b' 'gala': 2,
                 'gas': 2,
                 'gravitational': 2,
@@ -111,6 +128,8 @@ def main():
                 'source': 2,
                 'star': 2,
                 'supernov': 2,
+                'survey': 2,
+                'theory': 2,
                 'ultra': 2,
                }
 
