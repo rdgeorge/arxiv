@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""
+This script queries arxiv for the latest papers and prints the most relevant,
+based on a keyword search of their titles.
+"""
+
 from __future__ import print_function
 import argparse
 import re
@@ -21,14 +26,15 @@ def title_relevance(title, keywords):
     Parameters
     ----------
     title : string
-        The string to determine a relevance for
+        The string to determine a relevance for.
     keywords : dictionary of string:int pairs
-        The keywords to search the string for and the weights given to them
+        The keywords to search the string for and the weights given to them.
 
     Returns
     -------
-    float
-        The sum of the weights of all keywords in the string
+    float, list :
+        The sum of the weights of all keywords in the string, and the keywords
+        found.
     """
     relevance = 0
     relevant_keywords = []
@@ -40,6 +46,9 @@ def title_relevance(title, keywords):
 
 
 def main():
+    """
+    Accepts and processes command-line arguments and queries arxiv database
+    """
     parser = argparse.ArgumentParser(description="Query arXiv for the latest "
                                                  "astro-ph.CO or HE papers and"
                                                  "display the most relevant")
@@ -47,6 +56,9 @@ def main():
                         help='Search astro-ph.HE instead of astro-ph.CO')
     parser.add_argument('--keywords', action='store_true',
                         help='Display the keywords matched in each title')
+    parser.add_argument('title', nargs='*', default=None,
+                        help='A paper title to calculate the weight of and '
+                             'list the keywords found within'               )
     args = parser.parse_args()
 
     # List the keywords and weights (keywords as regular expressions)
@@ -55,7 +67,7 @@ def main():
                 'millimet': 8,
                 'herschel': 6,
                 r'\b' 'merg': 6,
-                'ulirg' : 6,
+                'ulirg': 6,
                 r'\b' 'agn' r'\b': 4,
                 'cii': 4,
                 r'\b' 'dust': 4,
@@ -101,10 +113,17 @@ def main():
                 'supernov': 2,
                 'ultra': 2,
                }
+
+    if args.title != []:
+        relevance, keywords = title_relevance(' '.join(args.title), keywords)
+        print("The title has a relevance of {0:.1f}".format(relevance))
+        print("The following keywords were found: {0}".format(keywords))
+        return
+
     # Query arxiv
-    cat='astro-ph.CO'
+    cat = 'astro-ph.CO'
     if args.he is True:
-        cat='astro-ph.HE'
+        cat = 'astro-ph.HE'
     url = ('http://export.arxiv.org/api/query?search_query='
            'cat:' + cat + ''
            '&start=0'
