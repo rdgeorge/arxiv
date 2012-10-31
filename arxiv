@@ -7,6 +7,7 @@ based on a keyword search of their titles.
 
 from __future__ import print_function
 import argparse
+import datetime
 import re
 try:
     import urllib.request as req
@@ -69,6 +70,9 @@ def main():
                         help='Search astro-ph.HE instead of astro-ph.CO')
     parser.add_argument('--keywords', action='store_true',
                         help='Display the keywords matched in each title')
+    parser.add_argument('--week', action='store_true',
+                        help='Only display articles submitted within the '
+                             'past week'                                  )
     parser.add_argument('title', nargs='*', default=None,
                         help='A paper title to calculate the weight of and '
                              'list the keywords found within'               )
@@ -141,7 +145,7 @@ def main():
 
     # Query arxiv
     cat = 'astro-ph.CO'
-    if args.he is True:
+    if args.he:
         cat = 'astro-ph.HE'
     url = ('http://export.arxiv.org/api/query?search_query='
            'cat:' + cat + ''
@@ -153,16 +157,26 @@ def main():
     data = req.urlopen(url).read()
     page = feedparser.parse(data)
 
+    # Get articles
+    if args.week:
+        articles = [[-1, entry['id'][21:], entry['title'], []]
+                    for entry in page['entries']
+                    if ((datetime.datetime.now() -
+                         datetime.datetime.strptime(entry['published'],
+                                               '%Y-%m-%dT%H:%M:%SZ')).days < 7)
+                   ]
+    else:
+        articles = [[-1, entry['id'][21:], entry['title'], []]
+                    for entry in page['entries']              ]
+
     # Sort titles by relevance
-    articles = [[-1, entry['id'][21:], entry['title'], []]
-                for entry in page['entries']              ]
     for article in articles:
         article[0], article[3] = title_relevance(article[2], keywords)
     articles.sort(key=lambda article: article[0], reverse=False)
 
     for article in articles:
         if article[0] > 0.7:
-            if args.keywords is True:
+            if args.keywords:
                 print("{0:.1f}  {1} {2} {3}".format(article[0], article[1],
                                                     article[2], article[3]))
             else:
