@@ -39,8 +39,8 @@ def title_relevance(title, keywords):
     """
     filler_words = ('a', 'an', 'and', 'are', 'as', 'at', 'by',
                     'can', "can't", 'cannot', 'did', 'do', "don't",
-                    'for', 'from', 'how', 'in', 'is', 'not', 'of',
-                    'the', 'they', 'their', 'to',
+                    'for', 'from', 'how', 'in', 'is', 'not', 'of', 'over',
+                    'the', 'they', 'their', 'to', 'use', 'using',
                     'when', 'which', 'why', 'with')
     relevance = 0
 
@@ -83,6 +83,7 @@ def main():
                 r'\b' 'ism' r'\b': 8,
                 'millimet': 8,
                 'alma': 6,
+                'atlas': 6,
                 'herschel': 6,
                 r'\b' 'merg': 6,
                 'ulirg': 6,
@@ -106,6 +107,7 @@ def main():
                 'sub': 4,
                 'turbulent': 4,
                 'active': 2,
+                'cold': 2,
                 'distant': 2,
                 'distribution': 2,
                 'energy': 2,
