@@ -106,13 +106,17 @@ def main():
                 'starburst': 4,
                 'sub': 4,
                 'turbulent': 4,
+                r'\b' 'um' r'\b': 4,
                 'active': 2,
                 'cold': 2,
+                'cosmic': 2,
+                'count': 2,
                 'distant': 2,
                 'distribution': 2,
                 'energy': 2,
+                'extra': 2,
                 'fragment': 2,
-                r'\b' 'gala': 2,
+                'gala': 2,
                 'gas': 2,
                 'gravitational': 2,
                 'grow': 2,
@@ -176,14 +180,27 @@ def main():
         article[0], article[3] = title_relevance(article[2], keywords)
     articles.sort(key=lambda article: article[0], reverse=False)
 
+    # Determine terminal width
+    import os
+    num_cols = int(os.popen('stty size', 'r').read().split()[1])
+
+    # Pretty print results
     for article in articles:
-        if article[0] > 0.7:
+        if article[0] > 1.0:
+            # The first part of the output (relevance and arxiv id number)
+            relevance_id = '{0:.1f}  {1}'.format(article[0], article[1])
+            front_pad = ' ' * len(relevance_id)
+            # Format string containing title into several of the correct length
+            title_col_width = num_cols - len(relevance_id) - 1
+            article[2] = article[2].replace('\n ', '')
+            article[2] = re.sub('\s*\n\s*', '', article[2])
+            split_title = [article[2][i:(i + title_col_width)]
+                           for i in range(0, len(article[2]), title_col_width)]
+            print("{0} {1}".format(relevance_id, split_title[0]))
+            for title_segment in split_title[1:]:
+                print(front_pad, title_segment)
             if args.keywords:
-                print("{0:.1f}  {1} {2} {3}".format(article[0], article[1],
-                                                    article[2], article[3]))
-            else:
-                print("{0:.1f}  {1} {2}".format(article[0], article[1],
-                                                article[2])            )
+                print(front_pad, ' '.join(article[3]))
 
 
 if __name__ == '__main__':
