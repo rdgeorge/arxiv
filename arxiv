@@ -59,6 +59,51 @@ def title_relevance(title, keywords):
     return float(relevance) / len(title.split()), relevant_keywords
 
 
+def split_string_length(string, length):
+    """
+    Generator, split `string` into strings of length `length`.
+
+    Attempts to break before or after words.
+    Useful for displaying a paragraph in the terminal.
+
+    Parameters
+    ----------
+    string : string
+        The string to split.
+    length : int
+        The maximum length of substrings to return.
+    """
+
+    broken = []
+    old_pos = 0
+
+    if string == '':
+        yield string
+
+    while old_pos < len(string):
+        # If this substring is within length 'length', just return it
+        if length + old_pos >= len(string):
+            yield(string[old_pos:(length + old_pos)])
+            break
+        # Find the last ' ' in the substring
+        new_pos = string[old_pos:(length + old_pos)].rfind(' ', 1)
+        if new_pos is -1:  # Didn't reach ' ' - middle of word
+            new_pos = length + old_pos
+            yield(string[old_pos:new_pos])
+            try:
+                # If the start of the next substring would be a ' ', skip it
+                if string[length + old_pos] == ' ':
+                    old_pos = new_pos + 1
+                else:
+                    raise IndexError
+            except IndexError:
+                old_pos = new_pos
+        else:  # Standard action
+            new_pos += old_pos
+            yield(string[old_pos:new_pos])
+            old_pos = new_pos + 1
+
+
 def main():
     """
     Accepts and processes command-line arguments and queries arxiv database
@@ -192,10 +237,9 @@ def main():
             front_pad = ' ' * len(relevance_id)
             # Format string containing title into several of the correct length
             title_col_width = num_cols - len(relevance_id) - 1
-            article[2] = article[2].replace('\n ', '')
             article[2] = re.sub('\s*\n\s*', '', article[2])
-            split_title = [article[2][i:(i + title_col_width)]
-                           for i in range(0, len(article[2]), title_col_width)]
+            split_title = list(split_string_length(article[2],
+                                                   title_col_width))
             print("{0} {1}".format(relevance_id, split_title[0]))
             for title_segment in split_title[1:]:
                 print(front_pad, title_segment)
