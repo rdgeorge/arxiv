@@ -237,7 +237,7 @@ def main():
             front_pad = ' ' * len(relevance_id)
             # Format string containing title into several of the correct length
             title_col_width = num_cols - len(relevance_id) - 1
-            article[2] = re.sub('\s*\n\s*', '', article[2])
+            article[2] = re.sub('\s*\n\s*', ' ', article[2])
             split_title = list(split_string_length(article[2],
                                                    title_col_width))
             print("{0} {1}".format(relevance_id, split_title[0]))
