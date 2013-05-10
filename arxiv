@@ -16,8 +16,7 @@ except ImportError:
     reload(sys)  # Hack to put setdefaultencoding back in after python startup
     sys.setdefaultencoding("utf-8")  # Output utf-8 to terminal
     import urllib2 as req
-
-import feedparser
+import xml.etree.ElementTree as ET
 
 
 def title_relevance(title, keywords):
@@ -205,20 +204,26 @@ def main():
            #sortBy can be "relevance", "lastUpdatedDate", "submittedDate"
            '&sortBy=submittedDate'
            '&sortOrder=descending')
-    data = req.urlopen(url).read()
-    page = feedparser.parse(data)
+    page = ET.fromstring(req.urlopen(url).read())
+
+    entries = []
+    for entry in page.iterfind('{http://www.w3.org/2005/Atom}entry'):
+        entry_dict = {}
+        for child in entry:
+            entry_dict[child.tag.split('}')[1]] = child.text
+        entries.append(entry_dict)
 
     # Get articles
     if args.week:
         articles = [[-1, entry['id'][21:], entry['title'], []]
-                    for entry in page['entries']
+                    for entry in entries
                     if ((datetime.datetime.now() -
                          datetime.datetime.strptime(entry['published'],
                                                '%Y-%m-%dT%H:%M:%SZ')).days < 7)
-                   ]
+                    ]
     else:
         articles = [[-1, entry['id'][21:], entry['title'], []]
-                    for entry in page['entries']              ]
+                    for entry in entries                      ]
 
     # Sort titles by relevance
     for article in articles:
