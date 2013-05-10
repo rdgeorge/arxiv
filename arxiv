@@ -8,6 +8,7 @@ based on a keyword search of their titles.
 from __future__ import print_function
 import argparse
 import datetime
+from os.path import expanduser
 import re
 try:
     import urllib.request as req
@@ -109,11 +110,15 @@ def main():
     """
     parser = argparse.ArgumentParser(description="Query arXiv for the latest "
                                                  "astro-ph.CO or HE papers and"
-                                                 "display the most relevant")
+                                                 " display the most relevant")
+    parser.add_argument('--display-keywords', action='store_true',
+                        help='Display the keywords matched in each title')
     parser.add_argument('--he', action='store_true',
                         help='Search astro-ph.HE instead of astro-ph.CO')
-    parser.add_argument('--keywords', action='store_true',
-                        help='Display the keywords matched in each title')
+    parser.add_argument('--keyword-file',
+                        default=(expanduser('~') + '/.arxiv_keywords'),
+                        help=('The file of keywords to use '
+                              '(default = ~/.arxiv_keywords)'))
     parser.add_argument('--week', action='store_true',
                         help='Only display articles submitted within the '
                              'past week'                                  )
@@ -122,70 +127,17 @@ def main():
                              'list the keywords found within'               )
     args = parser.parse_args()
 
-    # List the keywords and weights (keywords as regular expressions)
-    keywords = {r'\b' 'smg' r'\b': 10,
-                r'\b' 'ism' r'\b': 8,
-                'millimet': 8,
-                'alma': 6,
-                'atlas': 6,
-                'herschel': 6,
-                r'\b' 'merg': 6,
-                'ulirg': 6,
-                r'\b' 'agn' r'\b': 4,
-                'cii': 4,
-                r'\b' 'dust': 4,
-                r'\b' 'emi': 4,
-                r'\b' 'evol': 4,
-                r'\b' 'form': 4,
-                'j=': 4,
-                r'\b' 'lens': 4,
-                'major': 4,
-                'medium': 4,
-                'molecular': 4,
-                'pdbi': 4,
-                'qso': 4,
-                'quasar': 4,
-                r'\b' 'sed' r'\b': 4,
-                'spectra': 4,
-                'starburst': 4,
-                'sub': 4,
-                'turbulent': 4,
-                r'\b' 'um' r'\b': 4,
-                'active': 2,
-                'cold': 2,
-                'cosmic': 2,
-                'count': 2,
-                'distant': 2,
-                'distribution': 2,
-                'energy': 2,
-                'extra': 2,
-                'fragment': 2,
-                'gala': 2,
-                'gas': 2,
-                'gravitational': 2,
-                'grow': 2,
-                'high': 2,
-                'infra' '-?' 'red': 2,
-                r'[\bfmn]' 'ir' r'\b': 2,
-                r'\b' 'inter': 2,
-                'lumin': 2,
-                'massive': 2,
-                'minor': 2,
-                'number': 2,
-                'observ': 2,
-                'probe': 2,
-                'propert': 2,
-                'redshift': 2,
-                'relation': 2,
-                'simulation': 2,
-                r'\b' 'sne' r'\b': 2,
-                'source': 2,
-                'star': 2,
-                'supernov': 2,
-                'survey': 2,
-                'theory': 2,
-                'ultra': 2,
-               }
+    # List the keywords and weights
+    keywords = {}
+    try:
+        with open(args.keyword_file) as keyword_file:
+            for line in keyword_file.readlines():
+                split_line = line.split()
+                keywords[split_line[0]] = int(split_line[1])
+    except IOError:
+        print("The keyword file does not exist, exiting")
+        import sys
+        sys.exit(1)
 
     if args.title != []:
         relevance, keywords = title_relevance(' '.join(args.title), keywords)
@@ -248,7 +200,7 @@ def main():
             print("{0} {1}".format(relevance_id, split_title[0]))
             for title_segment in split_title[1:]:
                 print(front_pad, title_segment)
-            if args.keywords:
+            if args.display_keywords:
                 print(front_pad, ' '.join(article[3]))
 
 
