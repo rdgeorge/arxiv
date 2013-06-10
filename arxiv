@@ -177,6 +177,12 @@ def main():
         articles = [[-1, entry['id'][21:], entry['title'], []]
                     for entry in entries                      ]
 
+    # Remove latex characters from title
+    latex_characters = ('$', '\\', '{', '}')
+    for article in articles:
+        for character in latex_characters:
+            article[2] = article[2].replace(character, '')
+
     # Sort titles by relevance
     for article in articles:
         article[0], article[3] = title_relevance(article[2], keywords)
