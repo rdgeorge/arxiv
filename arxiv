@@ -146,24 +146,28 @@ def main():
         return
 
     # Query arxiv
-    cat = 'astro-ph.CO'
-    if args.he:
-        cat = 'astro-ph.HE'
-    url = ('http://export.arxiv.org/api/query?search_query='
-           'cat:' + cat + ''
-           '&start=0'
-           '&max_results=500'
-           #sortBy can be "relevance", "lastUpdatedDate", "submittedDate"
-           '&sortBy=submittedDate'
-           '&sortOrder=descending')
-    page = ET.fromstring(req.urlopen(url).read())
-
     entries = []
-    for entry in page.iterfind('{http://www.w3.org/2005/Atom}entry'):
-        entry_dict = {}
-        for child in entry:
-            entry_dict[child.tag.split('}')[1]] = child.text
-        entries.append(entry_dict)
+    for cat in 'CO', 'GA', 'HE':
+        url = ('http://export.arxiv.org/api/query?search_query='
+               'cat:astro-ph.{}'.format(cat) + ''
+               '&start=0'
+               '&max_results=500'
+               #sortBy can be "relevance", "lastUpdatedDate", "submittedDate"
+               '&sortBy=submittedDate'
+               '&sortOrder=descending')
+        page = ET.fromstring(req.urlopen(url).read())
+
+        for entry in page.iterfind('{http://www.w3.org/2005/Atom}entry'):
+            entry_dict = {}
+            for child in entry:
+                entry_dict[child.tag.split('}')[1]] = child.text
+            entries.append(entry_dict)
+
+    unique_entries = []
+    for entry in entries:
+        if entry['id'] not in (e['id'] for e in unique_entries):
+            unique_entries.append(entry)
+    entries = unique_entries
 
     # Get articles
     if args.week:
